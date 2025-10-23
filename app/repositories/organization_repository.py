@@ -9,6 +9,7 @@ from starlette import status
 
 from app.models import Organization, Activity, Building
 from app.models.association_tables import organization_activity
+from app.repositories.common_dependencies import haversine_distance
 from app.schemas.organization import OrganizationUpdate, OrganizationCreate, OrganizationRead
 
 
@@ -83,7 +84,6 @@ async def delete_organization(session: AsyncSession, organization: Organization)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-# TODO
 async def get_all_organization_located_in_building(session: AsyncSession, building_id: int):
     result = await session.execute(
         select(Organization).options(selectinload(Organization.activities)).where(
@@ -136,18 +136,6 @@ async def get_organizations_in_bounds(
             Building.latitude.between(lat_min, lat_max),
             Building.longitude.between(lon_min, lon_max)))
     return result.scalars().all()
-
-
-EARTH_RADIUS_KM = 6371.0
-
-
-def haversine_distance(latitude1, longitude1, latitude2, longitude2):
-    lat1, lon1, lat2, lon2 = map(math.radians, [latitude1, longitude1, latitude2, longitude2])
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
-    c = 2 * math.asin(math.sqrt(a))
-    return EARTH_RADIUS_KM * c
 
 
 async def get_organizations_in_radius(session: AsyncSession,

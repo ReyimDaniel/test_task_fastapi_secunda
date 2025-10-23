@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from app.models import Building
+from app.repositories.common_dependencies import haversine_distance
 from app.schemas.building import BuildingUpdate, BuildingCreate
 
 
@@ -76,19 +77,6 @@ async def get_buildings_in_bounds(
         select(Building).where(Building.latitude.between(lat_min, lat_max),
                                Building.longitude.between(lon_min, lon_max)).order_by(Building.id))
     return result.scalars().all()
-
-
-# TODO
-EARTH_RADIUS_KM = 6371.0
-
-
-def haversine_distance(latitude1, longitude1, latitude2, longitude2):
-    lat1, lon1, lat2, lon2 = map(math.radians, [latitude1, longitude1, latitude2, longitude2])
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
-    c = 2 * math.asin(math.sqrt(a))
-    return EARTH_RADIUS_KM * c
 
 
 async def get_buildings_in_radius(session: AsyncSession,
