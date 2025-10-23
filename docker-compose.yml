@@ -1,0 +1,29 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    container_name: my_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: secunda_user
+      POSTGRES_PASSWORD: secunda
+      POSTGRES_DB: secunda_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./dump_db.sql:/docker-entrypoint-initdb.d/dump_db.sql:ro
+
+  web:
+    build: .
+    container_name: fastapi_app
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql+asyncpg://secunda_user:secunda@db:5432/secunda_db
+    ports:
+      - "8000:8000"
+
+volumes:
+  postgres_data:
