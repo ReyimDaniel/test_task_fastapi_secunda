@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     database_url: str | None = None
     db_echo: bool = False
 
+    api_key: str
+
     api_v1_prefix: str = '/api/v1'
     alembic_prefix: str = '/alembic'
 

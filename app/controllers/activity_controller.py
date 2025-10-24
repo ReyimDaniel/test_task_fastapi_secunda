@@ -7,6 +7,7 @@ from starlette import status
 from app.core.db_helper import db_helper
 from app.repositories import activity_repository
 from app.schemas.activity import ActivityRead, ActivityUpdate, ActivityCreate
+from app.core.dependencies import verify_api_key
 
 router = APIRouter(tags=['activity'])
 
@@ -14,14 +15,16 @@ router = APIRouter(tags=['activity'])
 @router.get('/all_activities', response_model=list[ActivityRead],
             summary="Получить список всех деятельностей из базы данных",
             description="Эндпоинт для получения списка всех деятельностей из базы данных.")
-async def read_all_activities(session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+async def read_all_activities(session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+                              _: None = Depends(verify_api_key)):
     return await activity_repository.get_all_activities(session=session)
 
 
 @router.get('/activity/{activity_id}', response_model=ActivityRead,
             summary="Получить деятельность из базы данных по ID",
             description="Эндпоинт для получения конкретной деятельности из базы данных по её ID.")
-async def get_activity_by_id(activity_id: int, session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+async def get_activity_by_id(activity_id: int, session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+                             _: None = Depends(verify_api_key)):
     activity = await activity_repository.get_activity_by_id(session=session, activity_id=activity_id)
     if activity is not None:
         return activity
@@ -33,7 +36,8 @@ async def get_activity_by_id(activity_id: int, session: AsyncSession = Depends(d
              summary="Добавить новую деятельность в базу данных",
              description="Эндпоинт для добавления новой деятельности в базу данных.")
 async def create_activity(activity_in: ActivityCreate,
-                          session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+                          session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+                          _: None = Depends(verify_api_key)):
     return await activity_repository.create_activity(session=session, activity_in=activity_in)
 
 
@@ -41,7 +45,8 @@ async def create_activity(activity_in: ActivityCreate,
             summary="Обновить все данные по деятельности",
             description="Эндпоинт для обновления данных по деятельности.")
 async def update_activity(activity_id: int, activity_update: ActivityUpdate,
-                          session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+                          session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+                          _: None = Depends(verify_api_key)):
     activity = await activity_repository.get_activity_by_id(session=session, activity_id=activity_id)
     if not activity:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found!")
@@ -53,7 +58,8 @@ async def update_activity(activity_id: int, activity_update: ActivityUpdate,
               summary="Обновить некоторые данные по деятельности",
               description="Эндпоинт для частичного обновления данных по деятельности.")
 async def update_activity_partial(activity_id: int, activity_update: ActivityUpdate,
-                                  session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+                                  session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+                                  _: None = Depends(verify_api_key)):
     activity = await activity_repository.get_activity_by_id(session=session, activity_id=activity_id)
     if not activity:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found!")
@@ -66,7 +72,8 @@ async def update_activity_partial(activity_id: int, activity_update: ActivityUpd
                description="Эндпоинт для удаления деятельности. "
                            "Необходимо ввести ID деятельности, которую необходимо удалить из базы данных.")
 async def delete_activity(activity_id: int,
-                          session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+                          session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+                          _: None = Depends(verify_api_key)):
     activity = await activity_repository.get_activity_by_id(session=session, activity_id=activity_id)
     if not activity:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found!")

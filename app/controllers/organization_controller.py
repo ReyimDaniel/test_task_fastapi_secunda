@@ -7,6 +7,7 @@ from starlette import status
 from app.core.db_helper import db_helper
 from app.repositories import organization_repository
 from app.schemas.organization import OrganizationRead, OrganizationCreate, OrganizationUpdate
+from app.core.dependencies import verify_api_key
 
 router = APIRouter(tags=['organizations'])
 
@@ -14,7 +15,8 @@ router = APIRouter(tags=['organizations'])
 @router.get('/all_organizations', response_model=list[OrganizationRead],
             summary="Получить список всех организаций из базы данных",
             description="Эндпоинт для получения списка всех организаций из базы данных.")
-async def read_all_organizations(session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+async def read_all_organizations(session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+                                 _: None = Depends(verify_api_key)):
     return await organization_repository.get_all_organizations(session=session)
 
 
@@ -22,7 +24,8 @@ async def read_all_organizations(session: AsyncSession = Depends(db_helper.scope
             summary="Получить организацию из базы данных по ID",
             description="Эндпоинт для получения конкретной организации из базы данных по её ID.")
 async def get_organization_by_id(organization_id: int,
-                                 session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+                                 session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+                                 _: None = Depends(verify_api_key)):
     organization = await organization_repository.get_organization_by_id(session=session,
                                                                         organization_id=organization_id)
     if organization is not None:
@@ -35,7 +38,8 @@ async def get_organization_by_id(organization_id: int,
              summary="Добавить новую организацию в базу данных",
              description="Эндпоинт для добавления организации в базу данных.")
 async def create_organization(organization_in: OrganizationCreate,
-                              session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+                              session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+                              _: None = Depends(verify_api_key)):
     return await organization_repository.create_organization(session=session, organization_in=organization_in)
 
 
@@ -43,7 +47,8 @@ async def create_organization(organization_in: OrganizationCreate,
             summary="Обновить все данные по организации",
             description="Эндпоинт для обновления данных по организации.")
 async def update_organization(organization_id: int, organization_update: OrganizationUpdate,
-                              session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+                              session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+                              _: None = Depends(verify_api_key)):
     organization = await organization_repository.get_organization_by_id(session=session,
                                                                         organization_id=organization_id)
     if not organization:
@@ -56,7 +61,8 @@ async def update_organization(organization_id: int, organization_update: Organiz
               summary="Обновить некоторые данные по организации",
               description="Эндпоинт для частичного обновления данных по организации.")
 async def update_organization_partial(organization_id: int, organization_update: OrganizationUpdate,
-                                      session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+                                      session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+                                      _: None = Depends(verify_api_key)):
     organization = await organization_repository.get_organization_by_id(session=session,
                                                                         organization_id=organization_id)
     if not organization:
@@ -70,7 +76,8 @@ async def update_organization_partial(organization_id: int, organization_update:
                description="Эндпоинт для удаления организации. "
                            "Необходимо ввести ID организации, которую необходимо удалить из базы данных.")
 async def delete_organization(organization_id: int,
-                              session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+                              session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+                              _: None = Depends(verify_api_key)):
     organization = await organization_repository.get_organization_by_id(session=session,
                                                                         organization_id=organization_id)
     if not organization:
@@ -85,7 +92,8 @@ async def delete_organization(organization_id: int,
                         "организаций из базы данных находящихся в конкретном здании.")
 async def get_all_organization_located_in_building(building_id: int,
                                                    session: AsyncSession = Depends(
-                                                       db_helper.scoped_session_dependency)):
+                                                       db_helper.scoped_session_dependency),
+                                                   _: None = Depends(verify_api_key)):
     return await organization_repository.get_all_organization_located_in_building(session=session,
                                                                                   building_id=building_id)
 
@@ -95,7 +103,8 @@ async def get_all_organization_located_in_building(building_id: int,
             description="Эндпоинт для получения списка всех "
                         "организаций из базы данных которые относятся к указанному виду деятельности.")
 async def get_all_organization_by_activity(activity_id: int,
-                                           session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+                                           session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+                                           _: None = Depends(verify_api_key)):
     return await organization_repository.get_organizations_by_activity(session=session, activity_id=activity_id)
 
 
@@ -106,7 +115,8 @@ async def get_all_organization_by_activity(activity_id: int,
                         "организаций из базы данных, находящихся в выбранных координатах широты и долготы. "
                         "Проверка по прямоугольной области.")
 async def all_organizations_in_bounds(lat_min: float, lat_max: float, lon_min: float, lon_max: float,
-                                      session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+                                      session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+                                      _: None = Depends(verify_api_key)):
     return await organization_repository.get_organizations_in_bounds(session, lat_min, lat_max, lon_min, lon_max)
 
 
@@ -117,7 +127,8 @@ async def all_organizations_in_bounds(lat_min: float, lat_max: float, lon_min: f
                         "организаций из базы данных, находящихся в выбранных координатах широты и долготы. "
                         "Проверка по через радиус.")
 async def all_organizations_in_radius(center_lat: float, center_lon: float, radius_km: float,
-                                      session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+                                      session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+                                      _: None = Depends(verify_api_key)):
     return await organization_repository.get_organizations_in_radius(session=session, center_lat=center_lat,
                                                                      center_lon=center_lon,
                                                                      radius_km=radius_km)
@@ -128,7 +139,8 @@ async def all_organizations_in_radius(center_lat: float, center_lon: float, radi
             description="Возвращает организации указанной деятельности и её подкатегорий до 3 уровней.")
 async def get_organizations_by_activity_limited_endpoint(activity_id: int,
                                                          session: AsyncSession = Depends(
-                                                             db_helper.scoped_session_dependency), ):
+                                                             db_helper.scoped_session_dependency),
+                                                         _: None = Depends(verify_api_key)):
     return await organization_repository.get_organizations_by_activity_limited(session=session, activity_id=activity_id,
                                                                                max_depth=3)
 
@@ -137,7 +149,8 @@ async def get_organizations_by_activity_limited_endpoint(activity_id: int,
             summary="Получить организацию из базы данных по его названию",
             description="Эндпоинт для получения конкретной организации из базы данных по её названию.")
 async def get_organization_by_name(organization_name: str,
-                                   session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+                                   session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+                                   _: None = Depends(verify_api_key)):
     organization = await organization_repository.get_organization_by_name(session=session,
                                                                           organization_name=organization_name)
     if organization is not None:
