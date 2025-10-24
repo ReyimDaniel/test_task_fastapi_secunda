@@ -5,10 +5,8 @@ services:
     image: postgres:15
     container_name: my_postgres
     restart: always
-    environment:
-      POSTGRES_USER: secunda_user
-      POSTGRES_PASSWORD: secunda
-      POSTGRES_DB: secunda_db
+    env_file:
+      - .env
     ports:
       - "5433:5432"
     volumes:
@@ -20,8 +18,8 @@ services:
     restart: always
     depends_on:
       - db
-    environment:
-      DATABASE_URL: postgresql+asyncpg://secunda_user:secunda@db:5432/secunda_db
+    env_file:
+      - .env
     ports:
       - "8000:8000"
 
