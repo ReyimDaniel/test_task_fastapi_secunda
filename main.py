@@ -15,7 +15,8 @@ app.include_router(phone_numbers_router, prefix="/phone_numbers")
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Hello User!"}
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", reload=True)
